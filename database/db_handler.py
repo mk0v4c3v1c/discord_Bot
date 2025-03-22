@@ -23,6 +23,15 @@ class DBHandler:
         self.cursor.execute("INSERT OR IGNORE INTO users (discord_id) VALUES (?)", (discord_id,))
         self.conn.commit()
 
+    def add_coins(self, discord_id, amount=50):
+        self.cursor.execute("UPDATE users SET coins = coins + ? WHERE discord_id = ?", (amount, discord_id))
+        self.conn.commit()
+
+    def get_balance(self, discord_id):
+        self.cursor.execute("SELECT coins FROM users WHERE discord_id = ?", (discord_id,))
+        result = self.cursor.fetchone()
+        return result[0] if result else 0
+
     def increment_messages(self, discord_id):
         self.cursor.execute("UPDATE users SET messages_sent = messages_sent + 1 WHERE discord_id = ?", (discord_id,))
         self.conn.commit()
