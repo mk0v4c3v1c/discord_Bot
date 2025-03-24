@@ -28,6 +28,10 @@ class DBHandler:
         except sqlite3.Error as e:
             print(f"Error adding user: {e}")
 
+    def get_top_users(self, limit=10):
+        self.cursor.execute("SELECT discord_id, xp, level FROM users ORDER BY xp DESC LIMIT ?", (limit,))
+        return self.cursor.fetchall()
+
     def add_coins(self, discord_id, amount=50):
         """Add coins to a user's balance."""
         try:
