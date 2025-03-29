@@ -17,7 +17,7 @@ async def on_ready():
 
 # func loading bot
 def load_extensions(bot):
-    for filename in os.listdir("./commands"):
+    for filename in os.listdir("../commands"):
         if filename.endswith(".py"):
             try:
                 bot.load_extension(f"commands.{filename[:-3]}")
