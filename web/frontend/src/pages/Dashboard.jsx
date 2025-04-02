@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Line, Bar } from 'react-chartjs-2';
+import { listenToUpdates } from '../services/socket';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -37,6 +38,12 @@ export default function Dashboard() {
       .then(res => res.json())
       .then(data => setStocks(data));
   }, []);
+
+  useEffect(() => {
+  listenToUpdates((data) => {
+    if (data.type === 'guild_update') setGuilds(data.count);
+  });
+}, []);
 
   const userData = {
     labels: users.map(user => user.username),
