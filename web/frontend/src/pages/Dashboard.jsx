@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Line, Bar } from 'react-chartjs-2';
 import { listenToUpdates } from '../services/socket';
+import GuildStatus from '../components/GuildStatus';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -28,6 +29,8 @@ export default function Dashboard() {
   const [users, setUsers] = useState([]);
   const [stocks, setStocks] = useState([]);
   const [activeTab, setActiveTab] = useState('overview');
+  const [guilds, setGuilds] = useState(0);
+
 
   useEffect(() => {
     fetch('/api/users')
@@ -39,11 +42,17 @@ export default function Dashboard() {
       .then(data => setStocks(data));
   }, []);
 
-  useEffect(() => {
-  listenToUpdates((data) => {
-    if (data.type === 'guild_update') setGuilds(data.count);
-  });
-}, []);
+    useEffect(() => {
+    listenToUpdates((data) => {
+      if (data.type === 'guild_update') setGuilds(data.count);
+    });
+  }, []);
+
+ useEffect(() => {
+    listenToUpdates((data) => {
+      if (data.type === 'guild_update') setGuilds(data.count);
+    });
+  }, []);
 
   const userData = {
     labels: users.map(user => user.username),
