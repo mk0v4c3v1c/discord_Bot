@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
+from .api import admin, auth
 from pydantic import BaseModel
 from typing import Optional, List
 import discord
@@ -43,6 +44,9 @@ class PortfolioItem(BaseModel):
     value: float
 
 # Routes
+app.include_router(admin.router)
+app.include_router(auth.router)
+
 @app.get("/users", response_model=List[User])
 async def get_users(limit: int = 10):
     # Get top users by XP
