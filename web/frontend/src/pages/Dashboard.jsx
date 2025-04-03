@@ -2,6 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Line, Bar } from 'react-chartjs-2';
 import { listenToUpdates } from '../services/socket';
 import GuildStatus from '../components/GuildStatus';
+import FeatureStatusCard from '../components/FeatureStatusCard';
+import UserManagement from '../components/UserManagement';
+import LogViewer from '../components/LogViewer';
+import BotControls from '../components/BotControls';
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -30,6 +35,16 @@ export default function Dashboard() {
   const [stocks, setStocks] = useState([]);
   const [activeTab, setActiveTab] = useState('overview');
   const [guilds, setGuilds] = useState(0);
+  const [features, setFeatures] = useState([
+  { name: 'AI Chat', active: true },
+  { name: 'Economy', active: true },
+  { name: 'Music', active: false }
+]);
+
+const [botStatus, setBotStatus] = useState({
+  uptime: '2h 45m',
+  memory: '256'
+});
 
 
   useEffect(() => {
@@ -103,6 +118,13 @@ export default function Dashboard() {
           Stock Market
         </button>
       </div>
+      //admin
+      <button
+        className={`px-4 py-2 mr-2 ${activeTab === 'admin' ? 'bg-indigo-600 text-white' : 'bg-gray-200'}`}
+        onClick={() => setActiveTab('admin')}
+      >
+      Admin
+      </button>
 
       {activeTab === 'overview' && (
         <div>
@@ -169,6 +191,17 @@ export default function Dashboard() {
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {activeTab === 'admin' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <BotControls botStatus={botStatus} onCommand={() => fetchStatus()} />
+            <FeatureStatusCard features={features} />
+        </div>
+        <UserManagement users={users} />
+        <LogViewer />
         </div>
       )}
 
