@@ -1,14 +1,29 @@
+import app
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
-from .api import admin, auth
+from web.backend.api import admin, auth
 from pydantic import BaseModel
 from typing import Optional, List
 import discord
 from database.db_handler import db
 import logging
 
+from web.run import app
+
 logger = logging.getLogger(__name__)
+
+@app.get("/bot/status")
+async def get_bot_status():
+    return {
+        "status": "online",
+        "guilds": len(bot.guilds),
+        "uptime": str(datetime.now() - start_time)
+    }
+
+@app.post("/bot/restart")
+async def restart_bot():
+    return {"message": "Restart command sent"}
 
 app = FastAPI(title="Discord Bot Dashboard API")
 
