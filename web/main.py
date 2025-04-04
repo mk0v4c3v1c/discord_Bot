@@ -1,33 +1,22 @@
-import app
-from fastapi import FastAPI, HTTPException, Depends
+from datetime import datetime
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import OAuth2PasswordBearer
-from web.backend.api import admin, auth
 from pydantic import BaseModel
 from typing import Optional, List
-import discord
-from database.db_handler import db
 import logging
+from database.db_handler import db
+from .api import admin, auth, bot
 
-from web.run import app
-
-logger = logging.getLogger(__name__)
-
-@app.get("/bot/status")
-async def get_bot_status():
-    return {
-        "status": "online",
-        "guilds": len(bot.guilds),
-        "uptime": str(datetime.now() - start_time)
-    }
-
-@app.post("/bot/restart")
-async def restart_bot():
-    return {"message": "Restart command sent"}
-
+# Initialize app
 app = FastAPI(title="Discord Bot Dashboard API")
 
-# CORS
+# Store bot start time
+start_time = datetime.now()
+
+# Configure logging
+logger = logging.getLogger(__name__)
+
+# CORS Middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -36,7 +25,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Models
+# Pydantic Models
 class User(BaseModel):
     id: str
     username: str
@@ -58,20 +47,22 @@ class PortfolioItem(BaseModel):
     current_price: float
     value: float
 
-# Routes
-app.include_router(admin.router)
-app.include_router(auth.router)
+# Include routers
+app.include_router(admin.router, prefix="/admin")
+app.include_router(auth.router, prefix="/auth")
+app.include_router(bot.router, prefix="/bot")
 
+# API Endpoints
 @app.get("/users", response_model=List[User])
 async def get_users(limit: int = 10):
-    # Get top users by XP
+    """Get top users by XP"""
     try:
         users = db.get_top_users(limit=limit)
         return [
             {
                 "id": user["discord_id"],
-                "username": "Unknown",  # Would need to fetch from Discord API
-                "discordriminator": "0000",
+                "username": "Unknown",
+                "discriminator": "0000",
                 "avatar": None,
                 "xp": user["xp"],
                 "level": user["level"],
@@ -85,10 +76,9 @@ async def get_users(limit: int = 10):
 
 @app.get("/stocks", response_model=List[Stock])
 async def get_stocks():
-    # Get all stocks data
+    """Get all stocks data"""
     try:
         from services.stock_market import stock_market
-        stocks = stock_market.get_all_stocks()
         return [
             {
                 "symbol": stock["symbol"],
@@ -96,7 +86,7 @@ async def get_stocks():
                 "price": stock["price"],
                 "volatility": stock["volatility"]
             }
-            for stock in stocks
+            for stock in stock_market.get_all_stocks()
         ]
     except Exception as e:
         logger.error(f"Error fetching stocks: {e}")
@@ -104,13 +94,19 @@ async def get_stocks():
 
 @app.get("/portfolio/{user_id}", response_model=List[PortfolioItem])
 async def get_portfolio(user_id: str):
-    # Get user's stock portfolio
+    """Get user's stock portfolio"""
     try:
         from services.stock_market import stock_market
-        portfolio = stock_market.get_portfolio(user_id)
-        return portfolio
+        return stock_market.get_portfolio(user_id)
     except Exception as e:
         logger.error(f"Error fetching portfolio: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch portfolio")
 
-# OAuth2 would need to be implemented for actual Discord login
+# Health check endpoint
+@app.get("/health")
+def health_check():
+    return {
+        "status": "healthy",
+        "uptime": str(datetime.now() - start_time),
+        "version": "1.0.0"
+    }
