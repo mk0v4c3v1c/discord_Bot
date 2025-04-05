@@ -5,9 +5,11 @@ from pydantic import BaseModel
 from typing import Optional, List
 import logging
 from database.db_handler import db
-from .api import admin, auth, bot
+from . import api
+import routers
 
 # Initialize app
+app.include_router(user_routes.router, prefix="/api")
 app = FastAPI(title="Discord Bot Dashboard API")
 
 # Store bot start time
