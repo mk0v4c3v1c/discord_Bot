@@ -3,6 +3,8 @@ from contextlib import closing
 from typing import Optional, List, Tuple, Dict, Any
 import logging
 
+import cursor
+
 logger = logging.getLogger(__name__)
 
 
@@ -180,6 +182,7 @@ class DBHandler:
     def close(self) -> None:
         """Close database connection."""
         self.conn.close()
+
 
 
 # Singleton instance
